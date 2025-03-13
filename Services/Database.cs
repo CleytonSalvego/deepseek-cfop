@@ -115,7 +115,7 @@ namespace DeepSeekCFOP.Services
                 {
                     query_texts = filter,
                     include = new[]{ "documents", "embeddings" },
-                    limit = 2
+                    limit = 100
                 };
 
                 string json = JsonSerializer.Serialize(data);

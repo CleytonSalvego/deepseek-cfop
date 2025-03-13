@@ -1,4 +1,6 @@
 ﻿using DeepSeekCFOP.Services;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
 using OllamaSharp;
 using OllamaSharp.Models;
 
@@ -8,7 +10,7 @@ const string OLLAMA_API_URL = "http://localhost:11434";
 const string COLLECION_NAME = "cfop-data";
 const string LLM_MODEL_NAME = "deepseek-r1";
 const string QUERY = "CFOP";
-const string QUESTION = "Qual é CFOP para venda fora do estado de SP que devo usar, me dê apenas o código sem explicação.";
+const string QUESTION = "Qual é CFOP para venda fora do estado de SP que devo usar, me dê apenas o código sem explicação?";
 
 Console.WriteLine("Configurando e iniciando a aplicação...");
 var ollamaApiClient = new OllamaApiClient(OLLAMA_API_URL, LLM_MODEL_NAME);
@@ -43,7 +45,19 @@ Database.SetupDatabase();
 var customContext = await Database.GetData(COLLECION_NAME, QUERY);
 
 // Cria o prompt que será enviado ao LLM combinando o contexto obtido e a pergunta
-string prompt = $"Contexto: {string.Join(", ", customContext.documents)}\nPergunta: {QUESTION}";
+//string prompt = $"Propósito: Você é uma especialista em assuntos de contabilidade e fiscal referente as leis no Brasil que explica de forma simples\nContexto: {string.Join(", ", customContext.documents)}\nPergunta: {QUESTION}\nIdioma: Apresente o raciocínio e a resposta sempre em português do Brasil.";
+
+string prompt = @$"
+    1. Use o contexto para responder a pergunta.
+    2. Se você não souber a resposta diga que não sabe.
+    3. Mantenha a resposta clara e objetiva.
+    4. Responda apenas em português.
+    5. Responsa o que achar mais relevante em seu raciocínio.
+    6. Caso exista não exista uma resposta única enumere as resposta possíveis.
+    7. Desconsidere alternativas que não estão diretamente ligadas a pergunta.
+    Contexto: {string.Join(',', customContext.documents)}
+    Pergunta: {QUESTION}";
+
 var request = new GenerateRequest()
 {
     Model = LLM_MODEL_NAME,
